@@ -1,0 +1,1569 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Rugby Card</title>
+
+<!-- ═══ iOS HOME SCREEN / PWA ═══ -->
+<!-- Lance l'app en plein écran sans barre Safari -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<!-- Barre de statut noire pour s'intégrer au fond sombre -->
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<!-- Nom affiché sous l'icône sur l'écran d'accueil -->
+<meta name="apple-mobile-web-app-title" content="Rugby Card">
+<!-- Couleur du thème (barre d'adresse sur Android) -->
+<meta name="theme-color" content="#0a0a0f">
+
+<!-- Icône écran d'accueil iOS (générée en SVG inline via JS) -->
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 180 180'%3E%3Crect width='180' height='180' fill='%230a0a0f'/%3E%3Cellipse cx='90' cy='90' rx='52' ry='34' fill='none' stroke='%23f0c040' stroke-width='8'/%3E%3Cline x1='90' y1='56' x2='90' y2='124' stroke='%23f0c040' stroke-width='5'/%3E%3Cline x1='38' y1='90' x2='142' y2='90' stroke='%23f0c040' stroke-width='5'/%3E%3C/svg%3E">
+
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --noir: #0a0a0f;
+  --noir2: #13131e;
+  --or: #f0c040;
+  --or-dark: #c49a10;
+  --blanc: #ffffff;
+  --gris: #888899;
+  --gris-clair: #f0f0f0;
+  --vert: #00e676;
+  --rouge: #ff1744;
+  --border: rgba(255,255,255,0.08);
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+body {
+  background: #0a0a0f;
+  font-family: 'Barlow', sans-serif;
+  color: var(--blanc);
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-top: env(safe-area-inset-top);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* ── BANNIÈRE INSTALLATION ── */
+.install-banner {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 999;
+  background: linear-gradient(135deg, #1a1a2e, #13131e);
+  border-top: 1px solid rgba(240,192,64,0.3);
+  padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  animation: slideUpBanner 0.5s 1.5s ease both;
+  transform: translateY(100%);
+}
+@keyframes slideUpBanner { to { transform: translateY(0); } }
+.install-banner .ib-icon {
+  width: 44px; height: 44px;
+  background: linear-gradient(135deg, #1a1a1a, #2a2a2a);
+  border: 1.5px solid rgba(240,192,64,0.4);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.install-banner .ib-text { flex: 1; }
+.install-banner .ib-text strong {
+  display: block;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 14px; font-weight: 700; letter-spacing: 0.5px; color: var(--blanc);
+}
+.install-banner .ib-text span { font-size: 12px; color: var(--gris); display: flex; align-items: center; gap: 4px; margin-top: 2px; }
+.install-banner .ib-btn {
+  background: rgba(240,192,64,0.12);
+  border: 1.5px solid rgba(240,192,64,0.4);
+  border-radius: 8px;
+  color: var(--or);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px; letter-spacing: 1px; text-transform: uppercase;
+  padding: 8px 14px; cursor: pointer; flex-shrink: 0;
+}
+.install-banner .ib-close {
+  background: none; border: none; color: var(--gris);
+  font-size: 18px; cursor: pointer; padding: 4px; flex-shrink: 0;
+}
+/* Popup instructions iOS */
+.install-popup {
+  position: fixed;
+  bottom: 90px; left: 16px; right: 16px;
+  z-index: 1000;
+  background: #1e1e30;
+  border: 1px solid rgba(240,192,64,0.3);
+  border-radius: 14px;
+  padding: 18px;
+  display: none;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+}
+.install-popup.visible { display: block; animation: fadeInPop 0.25s ease; }
+@keyframes fadeInPop { from { opacity:0; transform: translateY(10px); } to { opacity:1; transform:translateY(0); } }
+.install-popup h4 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem; letter-spacing: 3px; color: var(--or); margin-bottom: 14px;
+}
+.install-step { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 12px; }
+.install-step:last-child { margin-bottom: 0; }
+.install-step .is-num {
+  width: 24px; height: 24px; background: var(--or); border-radius: 50%;
+  color: var(--noir); font-family: 'Bebas Neue', sans-serif; font-size: 14px;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0; margin-top: 1px;
+}
+.install-step p { font-size: 13px; color: rgba(255,255,255,0.8); line-height: 1.5; }
+.install-step p strong { color: var(--blanc); }
+.install-popup .close-pop {
+  width: 100%; margin-top: 14px;
+  background: rgba(240,192,64,0.1); border: 1px solid rgba(240,192,64,0.3);
+  border-radius: 8px; color: var(--or);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px; letter-spacing: 1px; text-transform: uppercase; padding: 10px; cursor: pointer;
+}
+.install-popup .arrow-down {
+  width: 0; height: 0;
+  border-left: 10px solid transparent; border-right: 10px solid transparent;
+  border-top: 10px solid rgba(240,192,64,0.3);
+  margin: 12px auto 0;
+}
+
+/* ── ÉCRAN FORMULAIRE ── */
+#screen-form {
+  width: 100%;
+  max-width: 480px;
+  padding: 24px 20px 40px;
+  display: block;
+}
+#screen-card {
+  width: 100%;
+  max-width: 480px;
+  padding: 0 0 40px;
+  display: none;
+}
+
+/* Form header */
+.form-header {
+  text-align: center;
+  padding: 32px 0 28px;
+}
+.form-header h1 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.4rem;
+  letter-spacing: 5px;
+  color: var(--or);
+}
+.form-header p {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  letter-spacing: 2.5px;
+  text-transform: uppercase;
+  color: var(--gris);
+  margin-top: 4px;
+}
+
+/* Sections */
+.form-section {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 14px;
+  padding: 20px 18px;
+  margin-bottom: 14px;
+}
+.form-section h3 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 3px;
+  color: var(--or);
+  margin-bottom: 14px;
+  display: flex; align-items: center; gap: 8px;
+}
+.form-section h3::before {
+  content: '';
+  width: 3px; height: 14px;
+  background: var(--or);
+  border-radius: 2px;
+  display: inline-block;
+}
+
+.field { margin-bottom: 12px; }
+.field:last-child { margin-bottom: 0; }
+.field label {
+  display: block;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gris);
+  margin-bottom: 5px;
+}
+.field input, .field select {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: var(--blanc);
+  font-family: 'Barlow', sans-serif;
+  font-size: 15px;
+  padding: 11px 13px;
+  transition: border-color 0.2s;
+}
+.field input:focus, .field select:focus {
+  outline: none;
+  border-color: var(--or);
+}
+.field select option { background: #1a1a2e; }
+.field input::placeholder { color: rgba(255,255,255,0.2); }
+
+.grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.grid3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; }
+
+/* Photo upload */
+.photo-row {
+  display: flex; align-items: center; gap: 14px;
+  margin-bottom: 12px;
+}
+.photo-circle {
+  width: 72px; height: 72px;
+  border-radius: 50%;
+  border: 2px solid var(--or);
+  background: rgba(255,255,255,0.06);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.photo-circle img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+.photo-btn {
+  flex: 1;
+  background: rgba(240,192,64,0.1);
+  border: 1.5px solid rgba(240,192,64,0.4);
+  border-radius: 8px;
+  color: var(--or);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  padding: 11px 16px;
+  cursor: pointer;
+  text-align: center;
+}
+#photoInput { display: none; }
+
+/* Stat inputs */
+.stat-inputs {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.stat-inp {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+}
+.stat-inp label {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--gris);
+  margin-bottom: 0;
+}
+.stat-inp input {
+  width: 100%;
+  text-align: center;
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem;
+  padding: 8px 4px;
+}
+
+/* Validation toggle */
+.valid-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+.valid-row:last-of-type { border-bottom: none; margin-bottom: 0; }
+.valid-label { font-size: 14px; color: rgba(255,255,255,0.8); }
+.valid-sub { font-size: 11px; color: var(--gris); margin-top: 2px; font-family: 'Barlow Condensed', sans-serif; letter-spacing: 1px; }
+
+/* Toggle */
+.toggle { position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0; }
+.toggle input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; cursor: pointer; inset: 0;
+  background: rgba(255,255,255,0.1);
+  border-radius: 26px;
+  transition: 0.3s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute;
+  width: 20px; height: 20px;
+  left: 3px; bottom: 3px;
+  background: var(--gris);
+  border-radius: 50%;
+  transition: 0.3s;
+}
+.toggle input:checked + .toggle-slider { background: rgba(0,230,118,0.25); }
+.toggle input:checked + .toggle-slider::before { transform: translateX(20px); background: var(--vert); }
+
+/* Signer row */
+.signer-row { display: flex; gap: 10px; }
+.signer-row .field { flex: 1; margin-bottom: 0; }
+
+/* Generate btn */
+.btn-generate {
+  width: 100%;
+  margin-top: 20px;
+  background: linear-gradient(135deg, var(--or-dark), var(--or));
+  border: none;
+  border-radius: 12px;
+  color: var(--noir);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: 4px;
+  padding: 17px;
+  cursor: pointer;
+  transition: opacity 0.2s, transform 0.15s;
+}
+.btn-generate:active { transform: scale(0.98); opacity: 0.9; }
+
+/* ══════════════════════════════════
+   CARTE DIGITALE
+══════════════════════════════════ */
+
+/* Back button */
+.back-btn {
+  display: flex; align-items: center; gap: 8px;
+  padding: 20px 20px 0;
+  cursor: pointer;
+  color: var(--gris);
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  background: none; border: none;
+  width: fit-content;
+}
+.back-btn:active { color: var(--or); }
+
+/* ─── PARTIE VISUELLE ─── */
+.card-visual {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 3/4;
+  overflow: hidden;
+  margin-top: 12px;
+}
+.card-photo-bg {
+  position: absolute; inset: 0;
+  background: #1a1a1a;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 80px;
+  color: rgba(255,255,255,0.05);
+  font-family: 'Bebas Neue', sans-serif;
+  letter-spacing: 4px;
+}
+.card-photo-bg img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  object-position: top center;
+}
+.card-gradient {
+  position: absolute; inset: 0;
+  background: linear-gradient(to top,
+    rgba(10,10,15,1) 0%,
+    rgba(10,10,15,0.7) 30%,
+    rgba(10,10,15,0.1) 60%,
+    transparent 100%);
+}
+/* grain texture */
+.card-grain {
+  position: absolute; inset: 0;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+  pointer-events: none; opacity: 0.6;
+}
+
+/* Top badge */
+.card-top-badge {
+  position: absolute; top: 16px; left: 20px;
+  display: flex; flex-direction: column; align-items: flex-start;
+}
+.rating-big {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 5rem;
+  line-height: 1;
+  color: var(--or);
+  text-shadow: 0 0 30px rgba(240,192,64,0.4);
+}
+.card-pos-badge {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  color: var(--or);
+  letter-spacing: 2px;
+  margin-top: -4px;
+}
+.card-club-badge {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  margin-top: 2px;
+}
+
+/* Season */
+.card-season {
+  position: absolute; top: 16px; right: 16px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  text-align: right;
+}
+
+/* Name block */
+.card-name-block {
+  position: absolute;
+  bottom: 120px; left: 20px; right: 20px;
+}
+.card-firstname {
+  font-family: 'Barlow', sans-serif;
+  font-size: 13px;
+  font-weight: 300;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.5);
+}
+.card-lastname {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 3rem;
+  letter-spacing: 4px;
+  color: var(--blanc);
+  line-height: 1;
+  margin-top: 2px;
+}
+.card-meta-line {
+  display: flex; gap: 12px; align-items: center;
+  margin-top: 6px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.4);
+}
+.card-meta-line span { display: flex; align-items: center; gap: 4px; }
+
+/* Stats on card */
+.card-stats-visual {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  padding: 12px 20px 16px;
+  display: flex;
+  border-top: 1px solid rgba(255,255,255,0.08);
+  background: rgba(10,10,15,0.6);
+  backdrop-filter: blur(8px);
+}
+.cvs {
+  flex: 1; text-align: center;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  padding: 0 4px;
+}
+.cvs:last-child { border-right: none; }
+.cvs-val {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem;
+  color: var(--blanc);
+  line-height: 1;
+  display: block;
+}
+.cvs-lbl {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 9px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--gris);
+  display: block;
+  margin-top: 1px;
+}
+
+/* ─── PARTIE DONNÉES ─── */
+.card-data {
+  padding: 0 16px;
+}
+
+/* Bloc tests */
+.data-block {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+.data-block-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.data-block-header h4 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 3px;
+  color: var(--or);
+}
+.data-block-header .date-tag {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: var(--gris);
+}
+
+/* Tests table */
+.tests-table { width: 100%; border-collapse: collapse; }
+.tests-table th {
+  padding: 8px 12px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gris);
+  text-align: left;
+  background: rgba(255,255,255,0.02);
+  border-bottom: 1px solid var(--border);
+}
+.tests-table td {
+  padding: 10px 12px;
+  font-size: 14px;
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  vertical-align: middle;
+}
+.tests-table tr:last-child td { border-bottom: none; }
+.tests-table td:first-child {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  color: rgba(255,255,255,0.7);
+}
+.tests-table td:nth-child(2) {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  color: var(--blanc);
+  letter-spacing: 1px;
+}
+.badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.badge-ok { background: rgba(0,230,118,0.12); color: var(--vert); border: 1px solid rgba(0,230,118,0.3); }
+.badge-nok { background: rgba(255,23,68,0.12); color: var(--rouge); border: 1px solid rgba(255,23,68,0.3); }
+.badge-na { background: rgba(255,255,255,0.05); color: var(--gris); border: 1px solid var(--border); }
+
+/* Australien result */
+.australien-results {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0;
+}
+.aus-res-item {
+  padding: 12px 10px;
+  text-align: center;
+  border-right: 1px solid var(--border);
+}
+.aus-res-item:last-child { border-right: none; }
+.aus-res-item .arv {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.6rem;
+  color: var(--or);
+  display: block; line-height: 1;
+}
+.aus-res-item .arl {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 10px;
+  letter-spacing: 1.5px;
+  text-transform: uppercase;
+  color: var(--gris);
+  margin-top: 2px;
+  display: block;
+}
+
+/* Radar mini */
+.radar-wrap {
+  display: flex;
+  justify-content: center;
+  padding: 14px 0 8px;
+  border-top: 1px solid var(--border);
+}
+
+/* Validation bloc */
+.validation-block {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  margin-top: 12px;
+  overflow: hidden;
+}
+.validation-header {
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.validation-header h4 {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1rem;
+  letter-spacing: 3px;
+  color: var(--or);
+}
+.licence-status {
+  display: flex; align-items: center; gap: 8px;
+  padding: 16px;
+  border-bottom: 1px solid var(--border);
+}
+.licence-icon {
+  width: 42px; height: 42px;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+.licence-icon.ok { background: rgba(0,230,118,0.12); border: 1px solid rgba(0,230,118,0.3); }
+.licence-icon.nok { background: rgba(255,23,68,0.12); border: 1px solid rgba(255,23,68,0.3); }
+.licence-text .lt { font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.5px; }
+.licence-text .lt.ok { color: var(--vert); }
+.licence-text .lt.nok { color: var(--rouge); }
+.licence-text .ls { font-size: 12px; color: var(--gris); margin-top: 1px; }
+
+.licence-items { padding: 4px 0; }
+.licence-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 16px;
+  border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+.licence-item:last-child { border-bottom: none; }
+.licence-item .li-label { font-size: 13px; color: rgba(255,255,255,0.7); }
+.licence-item .li-val { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; letter-spacing: 1px; font-weight: 700; }
+.li-val.ok { color: var(--vert); }
+.li-val.nok { color: var(--rouge); }
+.li-val.na { color: var(--gris); }
+
+/* Signature */
+.signature-block {
+  padding: 14px 16px;
+  border-top: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sig-left { font-size: 12px; color: var(--gris); font-family: 'Barlow Condensed', sans-serif; letter-spacing: 0.5px; }
+.sig-left strong { display: block; color: rgba(255,255,255,0.7); font-size: 13px; margin-bottom: 1px; }
+.sig-stamp {
+  width: 48px; height: 48px;
+  border: 2px solid rgba(0,230,118,0.4);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+}
+
+/* QR placeholder */
+.qr-block {
+  margin-top: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 14px 16px;
+  display: flex; align-items: center; gap: 14px;
+}
+.qr-box {
+  width: 56px; height: 56px;
+  border: 1.5px solid rgba(255,255,255,0.15);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px;
+  flex-shrink: 0;
+  background: rgba(255,255,255,0.04);
+}
+.qr-text .qt { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.5px; color: rgba(255,255,255,0.7); }
+.qr-text .qs { font-size: 11px; color: var(--gris); margin-top: 2px; }
+
+/* Footer card */
+.card-footer-strip {
+  margin-top: 12px;
+  padding: 0 16px 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.card-footer-strip .season-label {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--gris);
+}
+.card-footer-strip .hash {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 12px; letter-spacing: 2px;
+  color: rgba(255,255,255,0.15);
+}
+
+/* Share btn */
+.btn-share {
+  width: calc(100% - 32px);
+  margin: 16px 16px 0;
+  background: rgba(240,192,64,0.08);
+  border: 1.5px solid rgba(240,192,64,0.3);
+  border-radius: 12px;
+  color: var(--or);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.1rem;
+  letter-spacing: 3px;
+  padding: 14px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.btn-share:active { background: rgba(240,192,64,0.15); }
+
+/* ── ÉCRAN CONNEXION COACH ── */
+#screen-login {
+  width: 100%;
+  max-width: 480px;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 24px;
+}
+.login-logo {
+  font-size: 56px;
+  margin-bottom: 24px;
+  filter: drop-shadow(0 0 20px rgba(240,192,64,0.4));
+}
+.login-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 2.2rem;
+  letter-spacing: 5px;
+  color: var(--or);
+  text-align: center;
+  margin-bottom: 4px;
+}
+.login-sub {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 12px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gris);
+  text-align: center;
+  margin-bottom: 40px;
+}
+.login-box {
+  width: 100%;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 16px;
+  padding: 28px 24px;
+}
+.login-box label {
+  display: block;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--gris);
+  margin-bottom: 8px;
+}
+.login-box input {
+  width: 100%;
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: var(--blanc);
+  font-family: 'Barlow', sans-serif;
+  font-size: 20px;
+  padding: 14px 16px;
+  letter-spacing: 4px;
+  text-align: center;
+  margin-bottom: 16px;
+  transition: border-color 0.2s;
+}
+.login-box input:focus {
+  outline: none;
+  border-color: var(--or);
+}
+.login-error {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 13px;
+  letter-spacing: 1px;
+  color: var(--rouge);
+  text-align: center;
+  margin-bottom: 12px;
+  min-height: 20px;
+}
+.btn-login {
+  width: 100%;
+  background: linear-gradient(135deg, var(--or-dark), var(--or));
+  border: none;
+  border-radius: 10px;
+  color: var(--noir);
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: 1.2rem;
+  letter-spacing: 3px;
+  padding: 15px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+}
+.btn-login:active { opacity: 0.85; }
+.login-hint {
+  font-family: 'Barlow Condensed', sans-serif;
+  font-size: 11px;
+  letter-spacing: 1px;
+  color: rgba(255,255,255,0.15);
+  text-align: center;
+  margin-top: 20px;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ══════════ CONNEXION COACH ══════════ -->
+<div id="screen-login" style="display:none;">
+  <div class="login-logo">🏉</div>
+  <div class="login-title">COACH ACCESS</div>
+  <div class="login-sub">Espace préparateur physique</div>
+  <div class="login-box">
+    <label>Code d'accès</label>
+    <input type="password" id="pin-input" placeholder="••••" maxlength="10"
+      onkeydown="if(event.key==='Enter') verifierPin()">
+    <div class="login-error" id="pin-error"></div>
+    <button class="btn-login" onclick="verifierPin()">ACCÉDER ▶</button>
+  </div>
+  <div class="login-hint">Accès réservé au staff technique</div>
+</div>
+
+<!-- ══════════ FORMULAIRE ══════════ -->
+<div id="screen-form">
+
+  <div class="form-header">
+    <h1>RUGBY CARD</h1>
+    <p>Création de carte joueur</p>
+  </div>
+
+  <!-- Photo + identité -->
+  <div class="form-section">
+    <h3>Identité</h3>
+    <div class="photo-row">
+      <div class="photo-circle" id="photoPreview">🏉</div>
+      <label class="photo-btn" for="photoInput">📷 Ajouter une photo</label>
+      <input type="file" id="photoInput" accept="image/*" onchange="handlePhoto(this)">
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label>Prénom</label>
+        <input type="text" id="f_prenom" placeholder="Jules">
+      </div>
+      <div class="field">
+        <label>Nom</label>
+        <input type="text" id="f_nom" placeholder="Martin">
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1.1fr 1.9fr;gap:10px;">
+      <div class="field">
+        <label>Date de naissance</label>
+        <input type="date" id="f_dob" style="font-size:12px;padding:11px 6px;">
+      </div>
+      <div class="field">
+        <label>N° Licence</label>
+        <input type="text" id="f_licence" placeholder="Ex : 123456">
+      </div>
+    </div>
+    <div class="grid2">
+      <div class="field">
+        <label>Poste</label>
+        <select id="f_poste">
+          <option value="">— Poste —</option>
+          <option>Pilier Gauche</option><option>Talonneur</option><option>Pilier Droit</option>
+          <option>2ème Ligne</option><option>3ème Ligne Aile</option><option>3ème Ligne Centre</option>
+          <option>Demi de Mêlée</option><option>Demi d'Ouverture</option>
+          <option>Centre</option><option>Ailier</option><option>Arrière</option>
+        </select>
+      </div>
+      <div class="field">
+        <label>Club</label>
+        <input type="text" id="f_club" placeholder="Nom du club">
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats -->
+  <div class="form-section">
+    <h3>Stats physiques (0–99)</h3>
+    <div class="stat-inputs">
+      <div class="stat-inp"><label>VIT</label><input type="number" id="s_vit" min="0" max="99" placeholder="—" oninput="cap(this)"></div>
+      <div class="stat-inp"><label>EXP</label><input type="number" id="s_exp" min="0" max="99" placeholder="—" oninput="cap(this)"></div>
+      <div class="stat-inp"><label>END</label><input type="number" id="s_end" min="0" max="99" placeholder="—" oninput="cap(this)"></div>
+      <div class="stat-inp"><label>LAC</label><input type="number" id="s_lac" min="0" max="99" placeholder="—" oninput="cap(this)"></div>
+      <div class="stat-inp"><label>PUI</label><input type="number" id="s_pui" min="0" max="99" placeholder="—" oninput="cap(this)"></div>
+      <div class="stat-inp"><label>AGI</label><input type="number" id="s_agi" min="0" max="99" placeholder="—" oninput="cap(this)"></div>
+    </div>
+  </div>
+
+  <!-- Tests -->
+  <div class="form-section">
+    <h3>Sprints</h3>
+    <div class="grid3">
+      <div class="field"><label>10m (sec)</label><input type="number" id="t_10" step="0.01" placeholder="1.70"></div>
+      <div class="field"><label>30m (sec)</label><input type="number" id="t_30" step="0.01" placeholder="4.20"></div>
+      <div class="field"><label>50m (sec)</label><input type="number" id="t_50" step="0.01" placeholder="6.50"></div>
+    </div>
+  </div>
+
+  <div class="form-section">
+    <h3>Test Australien</h3>
+    <div class="grid3">
+      <div class="field"><label>P1 (m)</label><input type="number" id="a1" placeholder="—"></div>
+      <div class="field"><label>P2 (m)</label><input type="number" id="a2" placeholder="—"></div>
+      <div class="field"><label>P3 (m)</label><input type="number" id="a3" placeholder="—"></div>
+      <div class="field"><label>P4 (m)</label><input type="number" id="a4" placeholder="—"></div>
+      <div class="field"><label>P5 (m)</label><input type="number" id="a5" placeholder="—"></div>
+      <div class="field"><label>P6 (m)</label><input type="number" id="a6" placeholder="—"></div>
+    </div>
+  </div>
+
+  <!-- Validation licence -->
+  <div class="form-section">
+    <h3>Validation licence</h3>
+
+    <div class="valid-row">
+      <div>
+        <div class="valid-label">Sprints validés</div>
+        <div class="valid-sub">Tests 10m / 30m / 50m effectués</div>
+      </div>
+      <label class="toggle"><input type="checkbox" id="v_sprints"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="valid-row">
+      <div>
+        <div class="valid-label">Test australien validé</div>
+        <div class="valid-sub">6 passages enregistrés</div>
+      </div>
+      <label class="toggle"><input type="checkbox" id="v_australien"><span class="toggle-slider"></span></label>
+    </div>
+    <div class="valid-row">
+      <div>
+        <div class="valid-label">Présence complète</div>
+        <div class="valid-sub">Séance d'évaluation entière</div>
+      </div>
+      <label class="toggle"><input type="checkbox" id="v_presence"><span class="toggle-slider"></span></label>
+    </div>
+
+    <div class="field" style="margin-top:14px;">
+      <label>Date de la séance</label>
+      <input type="date" id="f_datetest">
+    </div>
+
+    <div class="field">
+      <label>Validé par (préparateur physique)</label>
+      <div class="signer-row">
+        <div class="field"><input type="text" id="f_sigprenom" placeholder="Prénom"></div>
+        <div class="field"><input type="text" id="f_signom" placeholder="NOM"></div>
+      </div>
+    </div>
+  </div>
+
+  <button class="btn-generate" onclick="genererCarte()">⚡ GÉNÉRER MA CARTE</button>
+</div>
+
+<!-- ══════════ CARTE ══════════ -->
+<div id="screen-card">
+  <div style="display:flex;justify-content:space-between;align-items:center;padding:20px 20px 0;" id="card-top-bar">
+    <button class="back-btn" style="padding:0;" onclick="retourForm()" id="btn-modifier">← Modifier</button>
+    <button onclick="effacerSauvegarde()" id="btn-reinit" style="background:none;border:none;color:#ff1744;font-family:'Barlow Condensed',sans-serif;font-size:12px;letter-spacing:1px;text-transform:uppercase;cursor:pointer;">✕ Réinitialiser</button>
+  </div>
+
+  <!-- Visuel -->
+  <div class="card-visual">
+    <div class="card-photo-bg" id="c_photo_bg">RUGBY</div>
+    <div class="card-gradient"></div>
+    <div class="card-grain"></div>
+
+    <div class="card-season" id="c_season"></div>
+
+    <div class="card-top-badge">
+      <div class="rating-big" id="c_rating">—</div>
+      <div class="card-pos-badge" id="c_poste">—</div>
+      <div class="card-club-badge" id="c_club">—</div>
+    </div>
+
+    <div class="card-name-block">
+      <div class="card-firstname" id="c_prenom"></div>
+      <div class="card-lastname" id="c_nom"></div>
+      <div class="card-meta-line" id="c_meta"></div>
+    </div>
+
+    <div class="card-stats-visual">
+      <div class="cvs"><span class="cvs-val" id="cv_vit">—</span><span class="cvs-lbl">VIT</span></div>
+      <div class="cvs"><span class="cvs-val" id="cv_exp">—</span><span class="cvs-lbl">EXP</span></div>
+      <div class="cvs"><span class="cvs-val" id="cv_end">—</span><span class="cvs-lbl">END</span></div>
+      <div class="cvs"><span class="cvs-val" id="cv_lac">—</span><span class="cvs-lbl">LAC</span></div>
+      <div class="cvs"><span class="cvs-val" id="cv_pui">—</span><span class="cvs-lbl">PUI</span></div>
+      <div class="cvs"><span class="cvs-val" id="cv_agi">—</span><span class="cvs-lbl">AGI</span></div>
+    </div>
+  </div>
+
+  <div class="card-data">
+
+    <!-- Sprints -->
+    <div class="data-block">
+      <div class="data-block-header">
+        <h4>Sprints — Anaérobie Alactique</h4>
+        <span class="date-tag" id="c_datetest"></span>
+      </div>
+      <table class="tests-table">
+        <thead>
+          <tr><th>Distance</th><th>Temps</th><th>Statut</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>10 m</td><td id="c_t10">—</td><td id="cb_t10"><span class="badge badge-na">—</span></td></tr>
+          <tr><td>30 m</td><td id="c_t30">—</td><td id="cb_t30"><span class="badge badge-na">—</span></td></tr>
+          <tr><td>50 m</td><td id="c_t50">—</td><td id="cb_t50"><span class="badge badge-na">—</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Test australien -->
+    <div class="data-block">
+      <div class="data-block-header">
+        <h4>Test Australien — Endurance Lactique</h4>
+      </div>
+      <div class="australien-results">
+        <div class="aus-res-item"><span class="arv" id="c_aus_total">—</span><span class="arl">Total (m)</span></div>
+        <div class="aus-res-item"><span class="arv" id="c_aus_indice">—</span><span class="arl">Indice (%)</span></div>
+        <div class="aus-res-item"><span class="arv" id="c_aus_max">—</span><span class="arl">Max (m)</span></div>
+      </div>
+      <div class="radar-wrap" id="c_radar"></div>
+    </div>
+
+    <!-- Validation -->
+    <div class="validation-block">
+      <div class="validation-header">
+        <h4>Validation Licence</h4>
+      </div>
+      <div class="licence-status">
+        <div class="licence-icon" id="c_lic_icon">❓</div>
+        <div class="licence-text">
+          <div class="lt" id="c_lic_title">—</div>
+          <div class="ls" id="c_lic_sub">—</div>
+        </div>
+      </div>
+      <div class="licence-items">
+        <div class="licence-item">
+          <span class="li-label">Sprints effectués</span>
+          <span class="li-val" id="lv_sprints">—</span>
+        </div>
+        <div class="licence-item">
+          <span class="li-label">Test australien</span>
+          <span class="li-val" id="lv_aus">—</span>
+        </div>
+        <div class="licence-item">
+          <span class="li-label">Présence complète</span>
+          <span class="li-val" id="lv_presence">—</span>
+        </div>
+        <div class="licence-item">
+          <span class="li-label">N° Licence</span>
+          <span class="li-val" id="lv_num" style="color:rgba(255,255,255,0.6)">—</span>
+        </div>
+      </div>
+      <div class="signature-block">
+        <div class="sig-left">
+          <strong id="c_signataire">—</strong>
+          Préparateur physique
+        </div>
+        <div class="sig-stamp" id="c_stamp">✓</div>
+      </div>
+    </div>
+
+    <!-- QR -->
+    <div class="qr-block">
+      <div class="qr-box">📲</div>
+      <div class="qr-text">
+        <div class="qt">Carte digitale officielle</div>
+        <div class="qs">Présente cette carte à ton dirigeant de club pour valider ta licence saison <span id="c_qr_season"></span></div>
+      </div>
+    </div>
+
+    <div class="card-footer-strip">
+      <span class="season-label" id="c_footer_club">—</span>
+      <span class="hash" id="c_hash">—</span>
+    </div>
+
+    <button class="btn-share" onclick="genererLien()" id="btn-send">📤 ENVOYER AU JOUEUR</button>
+    <div id="lien-box" style="display:none;margin:12px 16px 0;background:rgba(0,230,118,0.07);border:1px solid rgba(0,230,118,0.3);border-radius:10px;padding:14px 16px;">
+      <p style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#00e676;margin-bottom:8px;">Lien joueur généré ✓</p>
+      <p id="lien-display" style="font-size:11px;color:rgba(255,255,255,0.5);word-break:break-all;margin-bottom:10px;"></p>
+      <button onclick="copierLien()" style="width:100%;background:rgba(0,230,118,0.12);border:1.5px solid rgba(0,230,118,0.4);border-radius:8px;color:#00e676;font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:1px;text-transform:uppercase;padding:10px;cursor:pointer;">📋 COPIER LE LIEN</button>
+      <button onclick="envoyerLien()" style="width:100%;margin-top:8px;background:none;border:1.5px solid rgba(255,255,255,0.15);border-radius:8px;color:rgba(255,255,255,0.6);font-family:'Barlow Condensed',sans-serif;font-size:13px;letter-spacing:1px;text-transform:uppercase;padding:10px;cursor:pointer;">↑ PARTAGER PAR MESSAGE</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ BANNIÈRE INSTALLATION ÉCRAN D'ACCUEIL ══ -->
+<div class="install-banner" id="installBanner">
+  <div class="ib-icon">🏉</div>
+  <div class="ib-text">
+    <strong>Ajouter à l'écran d'accueil</strong>
+    <span>Accès en 1 tap · Comme une vraie app</span>
+  </div>
+  <button class="ib-btn" onclick="showInstallPopup()">Installer</button>
+  <button class="ib-close" onclick="hideBanner()">✕</button>
+</div>
+
+<!-- Popup étapes iOS -->
+<div class="install-popup" id="installPopup">
+  <h4>📲 Installer la carte</h4>
+  <div class="install-step">
+    <div class="is-num">1</div>
+    <p>Appuie sur l'icône <strong>Partager ↑</strong> en bas de Safari (le carré avec une flèche)</p>
+  </div>
+  <div class="install-step">
+    <div class="is-num">2</div>
+    <p>Fais défiler la liste et appuie sur <strong>"Sur l'écran d'accueil"</strong></p>
+  </div>
+  <div class="install-step">
+    <div class="is-num">3</div>
+    <p>Appuie sur <strong>"Ajouter"</strong> en haut à droite — l'icône <strong>Rugby Card 🏉</strong> apparaît sur ton écran !</p>
+  </div>
+  <button class="close-pop" onclick="hidePopup()">Compris ✓</button>
+  <div class="arrow-down"></div>
+</div>
+
+<script>
+let photoDataUrl = null;
+
+function handlePhoto(input) {
+  if (!input.files || !input.files[0]) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    photoDataUrl = e.target.result;
+    const prev = document.getElementById('photoPreview');
+    prev.innerHTML = `<img src="${photoDataUrl}" alt="photo">`;
+  };
+  reader.readAsDataURL(input.files[0]);
+}
+
+function cap(input) {
+  let v = parseInt(input.value);
+  if (!isNaN(v)) {
+    if (v > 99) input.value = 99;
+    if (v < 0) input.value = 0;
+  }
+}
+
+function getAge(dob) {
+  if (!dob) return null;
+  return Math.floor((Date.now() - new Date(dob)) / (1000 * 60 * 60 * 24 * 365.25));
+}
+
+function fmtDate(d) {
+  if (!d) return '';
+  const [y, m, j] = d.split('-');
+  return `${j}/${m}/${y}`;
+}
+
+function getStat(id) { return parseInt(document.getElementById(id).value) || 0; }
+function getVal(id) { return document.getElementById(id).value.trim(); }
+
+function calcRating(stats) {
+  const vals = Object.values(stats).filter(v => v > 0);
+  if (!vals.length) return 0;
+  return Math.round(vals.reduce((a, b) => a + b, 0) / vals.length);
+}
+
+function calcAustralien() {
+  const ids = ['a1','a2','a3','a4','a5','a6'];
+  const vals = ids.map(id => parseFloat(document.getElementById(id).value)).filter(v => !isNaN(v) && v > 0);
+  if (!vals.length) return { total: 0, max: 0, min: 0, indice: 0, count: 0 };
+  const total = vals.reduce((a, b) => a + b, 0);
+  const max = Math.max(...vals);
+  const min = Math.min(...vals);
+  const indice = max > 0 ? parseFloat(((min / max) * 100).toFixed(1)) : 0;
+  return { total, max, min, indice, count: vals.length };
+}
+
+function drawRadar(stats, size = 130) {
+  const labels = ['VIT', 'EXP', 'END', 'LAC', 'PUI', 'AGI'];
+  const values = [stats.vit, stats.exp, stats.end, stats.lac, stats.pui, stats.agi].map(v => (v || 0) / 99);
+  const n = 6;
+  const cx = size / 2, cy = size / 2, R = size * 0.36;
+  const angle = i => (Math.PI * 2 * i / n) - Math.PI / 2;
+
+  let grid = [0.25, 0.5, 0.75, 1].map(r =>
+    `<polygon points="${Array.from({length:n},(_,i)=>{const a=angle(i);return`${cx+Math.cos(a)*R*r},${cy+Math.sin(a)*R*r}`}).join(' ')}" fill="none" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>`
+  ).join('');
+
+  let axes = Array.from({length:n},(_,i)=>{const a=angle(i);return`<line x1="${cx}" y1="${cy}" x2="${cx+Math.cos(a)*R}" y2="${cy+Math.sin(a)*R}" stroke="rgba(255,255,255,0.07)" stroke-width="1"/>`;}).join('');
+
+  let pts = values.map((v,i)=>{const a=angle(i);return`${cx+Math.cos(a)*R*v},${cy+Math.sin(a)*R*v}`;}).join(' ');
+
+  let lbls = labels.map((l,i)=>{const a=angle(i);const lx=cx+Math.cos(a)*(R+16);const ly=cy+Math.sin(a)*(R+16);return`<text x="${lx}" y="${ly}" text-anchor="middle" dominant-baseline="middle" fill="#f0c040" font-family="'Bebas Neue',sans-serif" font-size="9" letter-spacing="0.5">${l}</text>`;}).join('');
+
+  let dots = values.map((v,i)=>{const a=angle(i);return`<circle cx="${cx+Math.cos(a)*R*v}" cy="${cy+Math.sin(a)*R*v}" r="2.5" fill="#f0c040"/>`;}).join('');
+
+  return `<svg width="${size}" height="${size}" viewBox="0 0 ${size} ${size}">${grid}${axes}<polygon points="${pts}" fill="rgba(240,192,64,0.12)" stroke="#f0c040" stroke-width="1.5" stroke-linejoin="round"/>${dots}${lbls}</svg>`;
+}
+
+function badgeOk(ok) {
+  if (ok === null) return `<span class="badge badge-na">—</span>`;
+  return ok ? `<span class="badge badge-ok">✓ Validé</span>` : `<span class="badge badge-nok">✗ Absent</span>`;
+}
+
+function genererCarte() {
+  const prenom = getVal('f_prenom');
+  const nom = getVal('f_nom');
+  if (!prenom && !nom) { alert('Entre au moins un prénom ou un nom.'); return; }
+
+  const stats = {
+    vit: getStat('s_vit'), exp: getStat('s_exp'), end: getStat('s_end'),
+    lac: getStat('s_lac'), pui: getStat('s_pui'), agi: getStat('s_agi'),
+  };
+  const rating = calcRating(stats);
+  const aus = calcAustralien();
+  const dob = getVal('f_dob');
+  const age = getAge(dob);
+  const poste = getVal('f_poste') || '—';
+  const club = getVal('f_club') || '—';
+  const numLicence = getVal('f_licence') || '—';
+  const dateTest = getVal('f_datetest');
+  const sigPrenom = getVal('f_sigprenom');
+  const sigNom = getVal('f_signom');
+
+  const t10 = getVal('t_10'); const t30 = getVal('t_30'); const t50 = getVal('t_50');
+
+  const vSprints = document.getElementById('v_sprints').checked;
+  const vAus = document.getElementById('v_australien').checked;
+  const vPresence = document.getElementById('v_presence').checked;
+  const allValid = vSprints && vAus && vPresence;
+  const year = new Date().getFullYear();
+  const season = `${year}-${year+1}`;
+
+  // Photo
+  const photoBg = document.getElementById('c_photo_bg');
+  if (photoDataUrl) {
+    photoBg.innerHTML = `<img src="${photoDataUrl}" alt="photo">`;
+  } else {
+    photoBg.innerHTML = '🏉';
+  }
+
+  // Visuels
+  document.getElementById('c_rating').textContent = rating || '—';
+  document.getElementById('c_poste').textContent = poste;
+  document.getElementById('c_club').textContent = club;
+  document.getElementById('c_prenom').textContent = prenom.toUpperCase();
+  document.getElementById('c_nom').textContent = nom.toUpperCase();
+  document.getElementById('c_season').textContent = season;
+
+  const metaEl = document.getElementById('c_meta');
+  const metaParts = [];
+  if (age) metaParts.push(`<span>🎂 ${age} ans</span>`);
+  if (numLicence !== '—') metaParts.push(`<span>🪪 ${numLicence}</span>`);
+  metaEl.innerHTML = metaParts.join('');
+
+  ['vit','exp','end','lac','pui','agi'].forEach(k => {
+    document.getElementById(`cv_${k}`).textContent = stats[k] || '—';
+  });
+
+  // Sprints
+  document.getElementById('c_datetest').textContent = dateTest ? fmtDate(dateTest) : '';
+  document.getElementById('c_t10').textContent = t10 ? `${t10} s` : '—';
+  document.getElementById('c_t30').textContent = t30 ? `${t30} s` : '—';
+  document.getElementById('c_t50').textContent = t50 ? `${t50} s` : '—';
+  document.getElementById('cb_t10').innerHTML = badgeOk(t10 ? true : null);
+  document.getElementById('cb_t30').innerHTML = badgeOk(t30 ? true : null);
+  document.getElementById('cb_t50').innerHTML = badgeOk(t50 ? true : null);
+
+  // Australien
+  document.getElementById('c_aus_total').textContent = aus.total || '—';
+  document.getElementById('c_aus_indice').textContent = aus.indice ? `${aus.indice}%` : '—';
+  document.getElementById('c_aus_max').textContent = aus.max || '—';
+  document.getElementById('c_radar').innerHTML = drawRadar(stats);
+
+  // Validation
+  const licIcon = document.getElementById('c_lic_icon');
+  const licTitle = document.getElementById('c_lic_title');
+  const licSub = document.getElementById('c_lic_sub');
+  const stamp = document.getElementById('c_stamp');
+
+  if (allValid) {
+    licIcon.className = 'licence-icon ok'; licIcon.textContent = '✅';
+    licTitle.className = 'lt ok'; licTitle.textContent = 'LICENCE VALIDÉE';
+    licSub.textContent = `Saison ${season} — Tous les critères remplis`;
+    stamp.style.borderColor = 'rgba(0,230,118,0.5)';
+    stamp.textContent = '✓';
+  } else {
+    licIcon.className = 'licence-icon nok'; licIcon.textContent = '⚠️';
+    licTitle.className = 'lt nok'; licTitle.textContent = 'LICENCE EN ATTENTE';
+    licSub.textContent = 'Certains critères ne sont pas validés';
+    stamp.style.borderColor = 'rgba(255,23,68,0.4)';
+    stamp.textContent = '✗';
+  }
+
+  document.getElementById('lv_sprints').className = `li-val ${vSprints ? 'ok' : 'nok'}`;
+  document.getElementById('lv_sprints').textContent = vSprints ? '✓ Validé' : '✗ Non validé';
+  document.getElementById('lv_aus').className = `li-val ${vAus ? 'ok' : 'nok'}`;
+  document.getElementById('lv_aus').textContent = vAus ? '✓ Validé' : '✗ Non validé';
+  document.getElementById('lv_presence').className = `li-val ${vPresence ? 'ok' : 'nok'}`;
+  document.getElementById('lv_presence').textContent = vPresence ? '✓ Validée' : '✗ Non validée';
+  document.getElementById('lv_num').textContent = numLicence;
+
+  const sigName = [sigPrenom, sigNom.toUpperCase()].filter(Boolean).join(' ') || '—';
+  document.getElementById('c_signataire').textContent = sigName;
+
+  document.getElementById('c_qr_season').textContent = season;
+  document.getElementById('c_footer_club').textContent = `${club} · ${season}`;
+
+  // Hash joueur fixe
+  const hash = '#' + (prenom.slice(0,2) + nom.slice(0,2)).toUpperCase() + String(prenom.length + nom.length).padStart(4,'0');
+  document.getElementById('c_hash').textContent = hash;
+
+  // SAUVEGARDE AUTOMATIQUE
+  const saveData = {
+    prenom, nom, dob: getVal('f_dob'), poste, club,
+    numLicence, dateTest, sigPrenom, sigNom, stats,
+    t10: getVal('t_10'), t30: getVal('t_30'), t50: getVal('t_50'),
+    aus: ['a1','a2','a3','a4','a5','a6'].map(id => getVal(id)),
+    vSprints, vAus, vPresence,
+    photo: photoDataUrl,
+    savedAt: new Date().toISOString()
+  };
+  try { localStorage.setItem('rugby_card', JSON.stringify(saveData)); } catch(e) {}
+
+  // Switch d'écran
+  document.getElementById('screen-form').style.display = 'none';
+  document.getElementById('screen-card').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+function retourForm() {
+  document.getElementById('screen-card').style.display = 'none';
+  document.getElementById('screen-form').style.display = 'block';
+  window.scrollTo(0, 0);
+}
+
+// CHARGEMENT AU DÉMARRAGE
+function chargerSauvegarde() {
+  try {
+    const raw = localStorage.getItem('rugby_card');
+    if (!raw) return;
+    const d = JSON.parse(raw);
+    const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined && val !== null) el.value = val; };
+    set('f_prenom', d.prenom); set('f_nom', d.nom); set('f_dob', d.dob);
+    set('f_poste', d.poste); set('f_club', d.club); set('f_licence', d.numLicence);
+    set('f_datetest', d.dateTest); set('f_sigprenom', d.sigPrenom); set('f_signom', d.sigNom);
+    set('s_vit', d.stats?.vit); set('s_exp', d.stats?.exp); set('s_end', d.stats?.end);
+    set('s_lac', d.stats?.lac); set('s_pui', d.stats?.pui); set('s_agi', d.stats?.agi);
+    set('t_10', d.t10); set('t_30', d.t30); set('t_50', d.t50);
+    if (d.aus) ['a1','a2','a3','a4','a5','a6'].forEach((id,i) => set(id, d.aus[i]));
+    if (d.vSprints) document.getElementById('v_sprints').checked = true;
+    if (d.vAus) document.getElementById('v_australien').checked = true;
+    if (d.vPresence) document.getElementById('v_presence').checked = true;
+    if (d.photo) { photoDataUrl = d.photo; document.getElementById('photoPreview').innerHTML = `<img src="${d.photo}" alt="photo">`; }
+    genererCarte();
+  } catch(e) {}
+}
+
+function effacerSauvegarde() {
+  if (confirm('Effacer la carte et recommencer ?')) {
+    localStorage.removeItem('rugby_card');
+    photoDataUrl = null;
+    document.getElementById('photoPreview').innerHTML = '🏉';
+    ['f_prenom','f_nom','f_dob','f_poste','f_club','f_licence','f_datetest',
+     'f_sigprenom','f_signom','s_vit','s_exp','s_end','s_lac','s_pui','s_agi',
+     't_10','t_30','t_50','a1','a2','a3','a4','a5','a6'].forEach(id => {
+      const el = document.getElementById(id); if (el) el.value = '';
+    });
+    ['v_sprints','v_australien','v_presence'].forEach(id => { document.getElementById(id).checked = false; });
+    retourForm();
+  }
+}
+
+async function partager() {
+  const nom = document.getElementById('c_nom').textContent;
+  const prenom = document.getElementById('c_prenom').textContent;
+  const rating = document.getElementById('c_rating').textContent;
+  const text = `🏉 Carte joueur de ${prenom} ${nom} · Note : ${rating}/99`;
+  if (navigator.share) {
+    try { await navigator.share({ title: 'Rugby Card', text }); } catch(e) {}
+  } else {
+    await navigator.clipboard.writeText(text);
+    alert('Texte copié !');
+  }
+}
+
+// ── GÉNÉRATION DU LIEN JOUEUR ──
+let lienGenere = '';
+
+function genererLien() {
+  // Récupérer toutes les données depuis le localStorage
+  const raw = localStorage.getItem('rugby_card');
+  if (!raw) { alert('Génère d\'abord la carte !'); return; }
+
+  // Encoder en base64 pour l'URL (sans la photo pour garder l'URL courte)
+  const d = JSON.parse(raw);
+  const payload = {
+    prenom: d.prenom, nom: d.nom, dob: d.dob, poste: d.poste, club: d.club,
+    numLicence: d.numLicence, dateTest: d.dateTest, sigPrenom: d.sigPrenom, sigNom: d.sigNom,
+    stats: d.stats, t10: d.t10, t30: d.t30, t50: d.t50, aus: d.aus,
+    vSprints: d.vSprints, vAus: d.vAus, vPresence: d.vPresence,
+    readonly: true
+  };
+
+  const encoded = btoa(unescape(encodeURIComponent(JSON.stringify(payload))));
+  const baseUrl = window.location.href.split('?')[0].split('#')[0];
+  lienGenere = `${baseUrl}?card=${encoded}`;
+
+  // Afficher le lien
+  document.getElementById('lien-box').style.display = 'block';
+  const display = document.getElementById('lien-display');
+  display.textContent = lienGenere.length > 80 ? lienGenere.substring(0,80) + '...' : lienGenere;
+}
+
+function copierLien() {
+  navigator.clipboard.writeText(lienGenere).then(() => {
+    const btn = document.querySelector('#lien-box button');
+    btn.textContent = '✓ LIEN COPIÉ !';
+    setTimeout(() => btn.textContent = '📋 COPIER LE LIEN', 2000);
+  }).catch(() => {
+    // Fallback
+    const ta = document.createElement('textarea');
+    ta.value = lienGenere;
+    document.body.appendChild(ta);
+    ta.select(); document.execCommand('copy');
+    document.body.removeChild(ta);
+    alert('Lien copié !');
+  });
+}
+
+async function envoyerLien() {
+  const nom = document.getElementById('c_nom').textContent;
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: `Carte Rugby — ${nom}`,
+        text: `🏉 Voici ta carte joueur officielle`,
+        url: lienGenere
+      });
+    } catch(e) {}
+  } else {
+    copierLien();
+  }
+}
+// ── MOT DE PASSE COACH ──
+// Mot de passe par défaut : RUGBY2025
+// Pour le changer, remplace la valeur de COACH_HASH par le SHA-256 de ton nouveau mot de passe
+// via : https://emn178.github.io/online-tools/sha256.html
+const COACH_HASH = 'f02addd67834c2bb31f00d630a5530dd7e5378a6449f122c5aaf6b96e92d5558';
+
+async function hashPin(pin) {
+  const msgBuffer = new TextEncoder().encode(pin.toUpperCase());
+  const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+}
+
+async function verifierPin() {
+  const pin = document.getElementById('pin-input').value;
+  if (!pin) return;
+  const hash = await hashPin(pin);
+  if (hash === COACH_HASH) {
+    sessionStorage.setItem('coach_ok', '1');
+    document.getElementById('screen-login').style.display = 'none';
+    document.getElementById('screen-form').style.display = 'block';
+    chargerSauvegarde();
+  } else {
+    document.getElementById('pin-error').textContent = 'Code incorrect — réessaie';
+    document.getElementById('pin-input').value = '';
+    setTimeout(() => document.getElementById('pin-error').textContent = '', 2500);
+  }
+}
+
+// ── MODE LECTURE (joueur) ou MODE COACH ──
+function demarrer() {
+  const params = new URLSearchParams(window.location.search);
+  const cardParam = params.get('card');
+
+  if (cardParam) {
+    // MODE LECTURE — joueur avec lien, aucun login
+    try {
+      const decoded = JSON.parse(decodeURIComponent(escape(atob(cardParam))));
+      chargerDepuisData(decoded);
+      document.getElementById('screen-login').style.display = 'none';
+      document.getElementById('screen-form').style.display = 'none';
+      document.getElementById('btn-modifier').style.display = 'none';
+      document.getElementById('btn-reinit').style.display = 'none';
+      document.getElementById('btn-send').style.display = 'none';
+      document.getElementById('screen-card').style.display = 'block';
+      const bar = document.getElementById('card-top-bar');
+      bar.innerHTML = `<span style="font-family:'Barlow Condensed',sans-serif;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(0,230,118,0.7);padding:20px 20px 0;display:block;">🔒 Carte officielle — lecture seule</span>`;
+    } catch(e) {
+      alert('Lien invalide.');
+    }
+  } else if (sessionStorage.getItem('coach_ok') === '1') {
+    // Déjà connecté dans cette session
+    document.getElementById('screen-login').style.display = 'none';
+    document.getElementById('screen-form').style.display = 'block';
+    chargerSauvegarde();
+  } else {
+    // Afficher écran de connexion
+    document.getElementById('screen-login').style.display = 'flex';
+    document.getElementById('screen-form').style.display = 'none';
+  }
+}
+
+function chargerDepuisData(d) {
+  const set = (id, val) => { const el = document.getElementById(id); if (el && val !== undefined && val !== null) el.value = val; };
+  set('f_prenom', d.prenom); set('f_nom', d.nom); set('f_dob', d.dob);
+  set('f_poste', d.poste); set('f_club', d.club); set('f_licence', d.numLicence);
+  set('f_datetest', d.dateTest); set('f_sigprenom', d.sigPrenom); set('f_signom', d.sigNom);
+  set('s_vit', d.stats?.vit); set('s_exp', d.stats?.exp); set('s_end', d.stats?.end);
+  set('s_lac', d.stats?.lac); set('s_pui', d.stats?.pui); set('s_agi', d.stats?.agi);
+  set('t_10', d.t10); set('t_30', d.t30); set('t_50', d.t50);
+  if (d.aus) ['a1','a2','a3','a4','a5','a6'].forEach((id,i) => set(id, d.aus[i]));
+  if (d.vSprints) document.getElementById('v_sprints').checked = true;
+  if (d.vAus) document.getElementById('v_australien').checked = true;
+  if (d.vPresence) document.getElementById('v_presence').checked = true;
+  genererCarte();
+}
+
+// ── INSTALL BANNER ──
+function showInstallPopup() {
+  document.getElementById('installPopup').classList.add('visible');
+}
+function hidePopup() {
+  document.getElementById('installPopup').classList.remove('visible');
+}
+function hideBanner() {
+  document.getElementById('installBanner').style.display = 'none';
+  document.getElementById('installPopup').classList.remove('visible');
+  localStorage.setItem('banner_hidden', Date.now());
+}
+
+window.addEventListener('load', () => {
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+  const isStandalone = window.navigator.standalone === true;
+  const hidden = localStorage.getItem('banner_hidden');
+  const cooldown = hidden && (Date.now() - parseInt(hidden)) < 7 * 24 * 60 * 60 * 1000;
+
+  if (isIOS && !isStandalone && !cooldown) {
+    // La bannière s'anime toute seule via CSS animation-delay
+  } else {
+    document.getElementById('installBanner').style.display = 'none';
+  }
+
+  // Détecter mode lecture (lien joueur) ou mode coach
+  demarrer();
+});
+</script>
+</body>
+</html>
